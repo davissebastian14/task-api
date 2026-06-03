@@ -1,14 +1,17 @@
 const express = require('express');
-const app = express();
+const pool= require('./db');
 
+const app = express();
 app.use(express.json());
 
-let users = [
-    {id: 1, name: 'Davis', role:'developer'}
-];
-
-app.get('/users', function(req, res) {
-    res.json(users);
+app.get('/users', async(req, res)=> {
+    try{
+        const result= await pool.query('SELECT * FROM users');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({error: 'Database error'});
+    }
 });
 
 app.get('/users/:id', function(req, res) {
