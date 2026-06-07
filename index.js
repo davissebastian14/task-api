@@ -1,12 +1,16 @@
 const express = require('express');
 const pool= require('./db');
+const userRoutes= require('./routes/auth');
+const authMiddleware= require('./middleware/auth');
 
 const app = express();
 app.use(express.json());
 
-app.get('/users', async(req, res)=> {
+app.use('/auth', userRoutes);
+
+app.get('/users', authMiddleware, async(req, res)=> {
     try{
-        const result= await pool.query('SELECT * FROM users');
+        const result= await pool.query('SELECT id,name,role FROM users');
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
@@ -14,10 +18,10 @@ app.get('/users', async(req, res)=> {
     }
 });
 
-app.get('/users/:id', async(req, res)=> {
+app.get('/users/:id', authMiddleware, async(req, res)=> {
     try{
          const id = parseInt(req.params.id);
-         const result= await pool.query(`SELECT * FROM users where id = $1`,[id]);
+         const result= await pool.query(`SELECT id,name,role FROM users where id = $1`,[id]);
          if(result.rows.length === 0){
             return res.status(404).json({error: 'User not found!'});
          }
@@ -29,22 +33,10 @@ app.get('/users/:id', async(req, res)=> {
     }
 });
 
-app.post('/users', async(req, res)=>{
-    try{
-        const name= req.body.name;
-        const role= req.body.role;
-        const newUser= await pool.query(`INSERT INTO users (name,role) VALUES ($1,$2) RETURNING *`,[name, role]);
-        res.status(201).json(newUser.rows[0]);
-    } catch (err){
-        console.error(err.message);
-        res.status(500).json({error: 'Database error'});
-    }
-});
-
-app.delete('/users/:id', async(req, res)=>{
+app.delete('/users/:id', authMiddleware, async(req, res)=>{
     try{
         const id= parseInt(req.params.id);
-        const deletedUser= await pool.query(`DELETE FROM users WHERE id = $1 RETURNING *`,[id]);
+        const deletedUser= await pool.query(`DELETE FROM users WHERE id = $1 RETURNING id,name,role`,[id]);
         if(deletedUser.rows.length === 0){
             return res.status(404).json({error: 'User not found'})
         }
