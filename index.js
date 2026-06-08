@@ -1,12 +1,14 @@
 const express = require('express');
 const pool= require('./db');
 const userRoutes= require('./routes/auth');
+const taskRoutes= require('./routes/tasks');
 const authMiddleware= require('./middleware/auth');
 
 const app = express();
 app.use(express.json());
 
 app.use('/auth', userRoutes);
+app.use('/tasks', taskRoutes);
 
 app.get('/users', authMiddleware, async(req, res)=> {
     try{
