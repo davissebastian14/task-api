@@ -3,6 +3,7 @@ const pool= require('./db');
 const userRoutes= require('./routes/auth');
 const taskRoutes= require('./routes/tasks');
 const authMiddleware= require('./middleware/auth');
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
@@ -49,6 +50,6 @@ app.delete('/users/:id', authMiddleware, async(req, res)=>{
     } 
 })
 
-app.listen(3000, function() {
+app.listen(process.env.PORT || 3000, function() {
     console.log('Server is running on port 3000');
 });
