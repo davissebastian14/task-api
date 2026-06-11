@@ -2,11 +2,19 @@ const express= require('express');
 const pool= require('../db');
 const bcrypt= require('bcrypt');
 const jwt= require('jsonwebtoken');
+const Joi= require('joi');
+const validate= require('../middleware/validate')
 require('dotenv').config();
 
 const router= express.Router();
 
-router.post('/register', async(req, res)=>{
+const registerSchema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+})
+
+router.post('/register', validate(registerSchema), async(req, res)=>{
     try{
         let name= req.body.name;
         let email= req.body.email;
