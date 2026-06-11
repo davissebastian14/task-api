@@ -1,8 +1,15 @@
 const pool= require("../db");
-const authMiddleware= require("../middleware/auth")
+const authMiddleware= require("../middleware/auth");
 const express= require("express");
+const Joi= require("joi");
+const validate= require("../middleware/validate");
+
 
 const router= express.Router();
+
+const taskSchema= Joi.object({
+    title: Joi.string().required().min(3)
+})
 
 router.get('/', authMiddleware, async(req,res)=>{
     try{
@@ -14,7 +21,7 @@ router.get('/', authMiddleware, async(req,res)=>{
     }
 })
 
-router.post('/', authMiddleware, async(req,res)=>{
+router.post('/', authMiddleware, validate(taskSchema), async(req,res)=>{
     try{
         let title= req.body.title;
         let userId= req.user.id;
