@@ -13,7 +13,8 @@ const taskSchema= Joi.object({
 
 router.get('/', authMiddleware, async(req,res)=>{
     try{
-        const result= await pool.query("SELECT tasks.id, tasks.title, tasks.status, users.name AS owner FROM tasks JOIN users ON tasks.user_id= users.id");
+        let userId= req.user.id;
+        const result= await pool.query("SELECT tasks.id, tasks.title, tasks.status, users.name AS owner FROM tasks JOIN users ON tasks.user_id= users.id WHERE tasks.user_id= $1",[userId]);
         res.json(result.rows);
     } catch(err){
         console.log(err.message);
@@ -37,7 +38,8 @@ router.put('/:id', authMiddleware, async(req,res)=>{
     try{
         const id= parseInt(req.params.id);
         let status= req.body.status;
-        const updateStatus= await pool.query(`UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *`,[status, id]);
+        let userId= req.user.id;
+        const updateStatus= await pool.query(`UPDATE tasks SET status = $1 WHERE id = $2 AND user_id= $3 RETURNING *`,[status, id, userId]);
         if(updateStatus.rows.length === 0){
             return res.status(404).json({error: 'Task not found'});
         }
@@ -51,7 +53,8 @@ router.put('/:id', authMiddleware, async(req,res)=>{
 router.delete('/:id', authMiddleware, async(req,res)=>{
     try{
         const id= parseInt(req.params.id);
-        const deleteTask= await pool.query(`DELETE FROM tasks WHERE id= $1 RETURNING *`,[id]);
+        let userId= req.user.id;
+        const deleteTask= await pool.query(`DELETE FROM tasks WHERE id= $1 AND user_id= $2 RETURNING *`,[id, userId]);
         if(deleteTask.rows.length === 0){
             return res.status(404).json({error: 'Task not found'})
         }

@@ -14,6 +14,11 @@ const registerSchema = Joi.object({
     password: Joi.string().min(6).required()
 })
 
+const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+})
+
 router.post('/register', validate(registerSchema), async(req, res)=>{
     try{
         let name= req.body.name;
@@ -30,7 +35,7 @@ router.post('/register', validate(registerSchema), async(req, res)=>{
     }
 });
 
-router.post('/login', async(req, res)=>{
+router.post('/login', validate(loginSchema), async(req, res)=>{
     try{
         let email= req.body.email;
         let password= req.body.password;
@@ -40,7 +45,7 @@ router.post('/login', async(req, res)=>{
             let checkPassword= await bcrypt.compare(password, user.password);
             if(checkPassword){
                 const token= jwt.sign({id: user.id}, process.env.JWT_SECRET, {expiresIn: '1d'});
-                res.json(token);
+                res.json({token});
             }
             else{
                 return res.status(401).json({message: 'Invalid credentials'});
