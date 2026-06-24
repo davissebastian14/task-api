@@ -19,7 +19,7 @@ const loginSchema = Joi.object({
     password: Joi.string().required()
 })
 
-router.post('/register', validate(registerSchema), async(req, res)=>{
+router.post('/register', validate(registerSchema), async(req, res, next)=>{
     try{
         let name= req.body.name;
         let email= req.body.email;
@@ -30,12 +30,11 @@ router.post('/register', validate(registerSchema), async(req, res)=>{
 
         res.json(registeredUser.rows[0]);
     } catch(err){
-        console.log(err.message);
-        res.status(500).json({error: 'Database error'});
+        next(err);
     }
 });
 
-router.post('/login', validate(loginSchema), async(req, res)=>{
+router.post('/login', validate(loginSchema), async(req, res, next)=>{
     try{
         let email= req.body.email;
         let password= req.body.password;
@@ -54,8 +53,7 @@ router.post('/login', validate(loginSchema), async(req, res)=>{
             return res.status(401).json({message: 'Invalid credentials'});
         }    
     } catch(err){
-        console.log(err.message);
-        res.status(500).json({error: 'Database error'});
+        next(err);
     }
 });
 

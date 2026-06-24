@@ -11,30 +11,28 @@ const taskSchema= Joi.object({
     title: Joi.string().required().min(3)
 })
 
-router.get('/', authMiddleware, async(req,res)=>{
+router.get('/', authMiddleware, async(req,res,next)=>{
     try{
         let userId= req.user.id;
         const result= await pool.query("SELECT tasks.id, tasks.title, tasks.status, users.name AS owner FROM tasks JOIN users ON tasks.user_id= users.id WHERE tasks.user_id= $1",[userId]);
         res.json(result.rows);
     } catch(err){
-        console.log(err.message);
-        res.status(500).json({error: "Database error"});
+        next(err);
     }
 })
 
-router.post('/', authMiddleware, validate(taskSchema), async(req,res)=>{
+router.post('/', authMiddleware, validate(taskSchema), async(req,res,next)=>{
     try{
         let title= req.body.title;
         let userId= req.user.id;
         const newTask= await pool.query(`INSERT INTO tasks (title, user_id) VALUES ($1, $2) RETURNING *`,[title, userId]);
         res.status(201).json(newTask.rows[0]);
     } catch(err){
-        console.log(err.message);
-        res.status(500).json({error: "Database error"});
+        next(err);
     }
 });
 
-router.put('/:id', authMiddleware, async(req,res)=>{
+router.put('/:id', authMiddleware, async(req,res,next)=>{
     try{
         const id= parseInt(req.params.id);
         let status= req.body.status;
@@ -45,12 +43,11 @@ router.put('/:id', authMiddleware, async(req,res)=>{
         }
         res.json(updateStatus.rows[0]);
     } catch(err){
-        console.log(err.message);
-        res.status(500).json({error: "Database error"});
+        next(err);
     }
 });
 
-router.delete('/:id', authMiddleware, async(req,res)=>{
+router.delete('/:id', authMiddleware, async(req,res,next)=>{
     try{
         const id= parseInt(req.params.id);
         let userId= req.user.id;
@@ -60,8 +57,7 @@ router.delete('/:id', authMiddleware, async(req,res)=>{
         }
         res.json(deleteTask.rows[0]);
     } catch(err){
-        console.log(err.message);
-        res.status(500).json({error: "Database error"});
+        next(err);
     }
 })
 

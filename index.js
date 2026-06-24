@@ -12,17 +12,16 @@ app.use(express.json());
 app.use('/auth', userRoutes);
 app.use('/tasks', taskRoutes);
 
-app.get('/users', authMiddleware, async(req, res)=> {
+app.get('/users', authMiddleware, async(req, res, next)=> {
     try{
         const result= await pool.query('SELECT id,name,role FROM users');
         res.json(result.rows);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).json({error: 'Database error'});
+        next(err);
     }
 });
 
-app.get('/users/:id', authMiddleware, async(req, res)=> {
+app.get('/users/:id', authMiddleware, async(req, res, next)=> {
     try{
          const id = parseInt(req.params.id);
          const result= await pool.query(`SELECT id,name,role FROM users where id = $1`,[id]);
@@ -32,12 +31,11 @@ app.get('/users/:id', authMiddleware, async(req, res)=> {
          res.json(result.rows[0]);
 
     } catch(err){
-        console.error(err.message);
-        res.status(500).json({error: 'Server error'});
+        next(err);
     }
 });
 
-app.delete('/users/:id', authMiddleware, async(req, res)=>{
+app.delete('/users/:id', authMiddleware, async(req, res, next)=>{
     try{
         const id= parseInt(req.params.id);
         const deletedUser= await pool.query(`DELETE FROM users WHERE id = $1 RETURNING id,name,role`,[id]);
@@ -46,8 +44,7 @@ app.delete('/users/:id', authMiddleware, async(req, res)=>{
         }
         res.json(deletedUser.rows[0]);
     } catch (err){
-        console.error(err.message);
-        res.status(500).json({error: 'Database error'})
+        next(err);
     } 
 })
 
