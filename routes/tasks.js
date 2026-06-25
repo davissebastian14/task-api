@@ -11,12 +11,31 @@ const taskSchema= Joi.object({
     title: Joi.string().required().min(3)
 })
 
+const statusSchema= Joi.object({
+    status: Joi.string().valid('pending','in-progress','done').required()
+})
+
 router.get('/', authMiddleware, async(req,res,next)=>{
     try{
         let userId= req.user.id;
         const result= await pool.query("SELECT tasks.id, tasks.title, tasks.status, users.name AS owner FROM tasks JOIN users ON tasks.user_id= users.id WHERE tasks.user_id= $1",[userId]);
         res.json(result.rows);
     } catch(err){
+        next(err);
+    }
+})
+
+router.get('/:id', authMiddleware, async(req,res,next)=>{
+    try{
+        let id= parseInt(req.params.id);
+        let userId= req.user.id;
+        const result= await pool.query("SELECT id, title, status FROM tasks WHERE id=$1 AND user_id=$2", [id, userId]);
+        if(result.rows.length == 0){
+            return res.status(404).json({error: "Task not found"});
+        }
+        res.json(result.rows[0]);
+    }
+    catch(err){
         next(err);
     }
 })
@@ -32,7 +51,7 @@ router.post('/', authMiddleware, validate(taskSchema), async(req,res,next)=>{
     }
 });
 
-router.put('/:id', authMiddleware, async(req,res,next)=>{
+router.put('/:id', authMiddleware, validate(statusSchema), async(req,res,next)=>{
     try{
         const id= parseInt(req.params.id);
         let status= req.body.status;
