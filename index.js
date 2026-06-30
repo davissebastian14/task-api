@@ -1,5 +1,5 @@
 const express = require('express');
-const authRoutes= require('./routes/auth');
+const {router: authRoutes}= require('./routes/auth');
 const userRoutes= require('./routes/users');
 const taskRoutes= require('./routes/tasks');
 const errorHandle= require('./middleware/errorHandler');

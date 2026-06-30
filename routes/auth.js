@@ -57,5 +57,5 @@ router.post('/login', validate(loginSchema), async(req, res, next)=>{
     }
 });
 
-module.exports= router;
+module.exports= {router, registerSchema, loginSchema};
 
