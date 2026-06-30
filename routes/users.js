@@ -30,11 +30,17 @@ router.get('/:id', authMiddleware, async(req, res, next)=> {
 router.delete('/:id', authMiddleware, async(req, res, next)=>{
     try{
         const id= parseInt(req.params.id);
-        const deletedUser= await pool.query(`DELETE FROM users WHERE id = $1 RETURNING id,name,role`,[id]);
-        if(deletedUser.rows.length === 0){
+        let userId= req.user.id;
+        if (id == userId){
+            const deletedUser= await pool.query(`DELETE FROM users WHERE id = $1 RETURNING id,name,role`,[id]);
+            if(deletedUser.rows.length === 0){
+                return res.status(404).json({error: 'User not found'})
+            }
+            res.json(deletedUser.rows[0]);
+        } else{
             return res.status(404).json({error: 'User not found'})
         }
-        res.json(deletedUser.rows[0]);
+        
     } catch (err){
         next(err);
     } 
