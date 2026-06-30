@@ -1,6 +1,5 @@
 const { registerSchema, loginSchema }= require('../routes/auth');
 
-
 test('should return error when registering with invalid email', () => {
     let invalidUser= {
         name: "test",
