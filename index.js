@@ -3,9 +3,11 @@ const {router: authRoutes}= require('./routes/auth');
 const userRoutes= require('./routes/users');
 const {router: taskRoutes}= require('./routes/tasks');
 const errorHandle= require('./middleware/errorHandler');
+const cors= require('cors');
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
